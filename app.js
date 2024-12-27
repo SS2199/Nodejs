@@ -25,6 +25,7 @@ app.get('/', async (req, res) => {
   res.send(`Hello, Azure! This is a Node.js app. Stored messages: ${JSON.stringify(data)}`);
 });
 
+
 app.get('/add', async (req, res) => {
   try {
     const newData = new DataModel({ message: 'Sample message from Node.js app' });
