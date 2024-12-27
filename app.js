@@ -1,5 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -7,45 +9,60 @@ const port = process.env.PORT || 3000;
 // Azure Cosmos DB connection string
 const mongoURI = "mongodb://celescontainerwebapp-server:Cd8bsmtPGb944jUTWSF6f03i9ZyuoYpKSNd14ZX7rrL5hM9yzcdZF6WidOZABiakigan29ihvSGtACDbgtLJdg==@celescontainerwebapp-server.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@celescontainerwebapp-server@";
 
-// Connect to MongoDB
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Could not connect to MongoDB:', err));
+// Middleware for parsing JSON and form data
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// Define a simple schema and model
+// Set the public folder to serve static files
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Connect to MongoDB
+mongoose
+  .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('Could not connect to MongoDB:', err));
+
+// Define a schema and model
 const DataSchema = new mongoose.Schema({
-  message: String,
+  message: { type: String, required: true },
 });
 
 const DataModel = mongoose.model('Data', DataSchema);
 
-// Root route
-app.get('/', async (req, res) => {
+// Routes
+// Serve the HTML UI
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Endpoint to fetch all messages
+app.get('/messages', async (req, res) => {
   try {
-    const data = await DataModel.find();
-    res.send(`Hello, Azure! This is a Node.js app. Stored messages: ${JSON.stringify(data)}`);
+    const messages = await DataModel.find();
+    res.json({ success: true, messages });
   } catch (err) {
-    console.error('Error retrieving data:', err);
-    res.status(500).send('Error retrieving data');
+    console.error('Error retrieving messages:', err);
+    res.status(500).json({ success: false, message: 'Error retrieving messages' });
   }
 });
 
-// Add a sample route to insert data into MongoDB
-app.get('/add', async (req, res) => {
+// Endpoint to add a new message
+app.post('/add-message', async (req, res) => {
+  const { message } = req.body;
+
+  if (!message) {
+    return res.status(400).json({ success: false, message: 'Message is required' });
+  }
+
   try {
-    const newData = new DataModel({ message: 'Sample message from Node.js app' });
-    console.log('New data object created:', newData);
-
-    await newData.save();
-    console.log('Data saved to MongoDB successfully');
-
-    res.send('Data added successfully!');
+    const newData = new DataModel({ message });
+    const result = await newData.save();
+    res.json({ success: true, data: result });
   } catch (err) {
-    console.error('Error while saving data:', err);
-    res.status(500).send('Error while saving data');
+    console.error('Error while saving message:', err);
+    res.status(500).json({ success: false, message: 'Error while saving message' });
   }
 });
-
 
 // Start the server
 app.listen(port, () => {
