@@ -25,12 +25,21 @@ app.get('/', async (req, res) => {
   res.send(`Hello, Azure! This is a Node.js app. Stored messages: ${JSON.stringify(data)}`);
 });
 
-// Add a sample route to insert data into MongoDB
 app.get('/add', async (req, res) => {
-  const newData = new DataModel({ message: 'Sample message from Node.js app' });
-  await newData.save();
-  res.send('Data added successfully!');
+  try {
+    const newData = new DataModel({ message: 'Sample message from Node.js app' });
+    console.log('New data object created:', newData);
+
+    await newData.save();
+    console.log('Data saved to MongoDB successfully');
+
+    res.send('Data added successfully!');
+  } catch (err) {
+    console.error('Error while saving data:', err);
+    res.status(500).send('Error while saving data');
+  }
 });
+
 
 // Start the server
 app.listen(port, () => {
