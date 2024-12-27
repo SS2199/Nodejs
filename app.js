@@ -4,8 +4,8 @@ const mongoose = require('mongoose');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// MongoDB connection string from Azure Cosmos DB or MongoDB Atlas
-const mongoURI = process.env.AZURE_COSMOS_CONNECTIONSTRING;
+// Azure Cosmos DB connection string
+const mongoURI = "mongodb://celescontainerwebapp-server:Cd8bsmtPGb944jUTWSF6f03i9ZyuoYpKSNd14ZX7rrL5hM9yzcdZF6WidOZABiakigan29ihvSGtACDbgtLJdg==@celescontainerwebapp-server.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@celescontainerwebapp-server@";
 
 // Connect to MongoDB
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -21,11 +21,16 @@ const DataModel = mongoose.model('Data', DataSchema);
 
 // Root route
 app.get('/', async (req, res) => {
-  const data = await DataModel.find();
-  res.send(`Hello, Azure! This is a Node.js app. Stored messages: ${JSON.stringify(data)}`);
+  try {
+    const data = await DataModel.find();
+    res.send(`Hello, Azure! This is a Node.js app. Stored messages: ${JSON.stringify(data)}`);
+  } catch (err) {
+    console.error('Error retrieving data:', err);
+    res.status(500).send('Error retrieving data');
+  }
 });
 
-
+// Add a sample route to insert data into MongoDB
 app.get('/add', async (req, res) => {
   try {
     const newData = new DataModel({ message: 'Sample message from Node.js app' });
@@ -40,7 +45,6 @@ app.get('/add', async (req, res) => {
     res.status(500).send('Error while saving data');
   }
 });
-
 
 // Start the server
 app.listen(port, () => {
