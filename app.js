@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const path = require('path');
+const fs = require('fs'); // Use this to check the path
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -13,8 +14,15 @@ const mongoURI = "mongodb://celescontainerwebapp-server:Cd8bsmtPGb944jUTWSF6f03i
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Set the public folder to serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+// Ensure the path is correct and log it
+const frontendPath = path.join(__dirname, 'Frontend');
+console.log('Frontend directory path:', frontendPath);
+if (!fs.existsSync(frontendPath)) {
+  console.error('Frontend directory does not exist at the path:', frontendPath);
+}
+
+// Serve static files from the Frontend directory
+app.use(express.static(frontendPath));
 
 // Connect to MongoDB
 mongoose
@@ -30,9 +38,16 @@ const DataSchema = new mongoose.Schema({
 const DataModel = mongoose.model('Data', DataSchema);
 
 // Routes
-// Serve the HTML UI
+// Serve the index.html UI
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const indexFilePath = path.join(__dirname, 'Frontend', 'index.html');
+  console.log('Sending index.html from:', indexFilePath);
+
+  if (fs.existsSync(indexFilePath)) {
+    res.sendFile(indexFilePath);
+  } else {
+    res.status(404).send('index.html not found');
+  }
 });
 
 // Endpoint to fetch all messages

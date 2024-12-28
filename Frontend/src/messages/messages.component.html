@@ -1,0 +1,12 @@
+<div>
+    <h1>Node.js MongoDB App</h1>
+    <form (submit)="addMessage($event)">
+      <input [(ngModel)]="message" placeholder="Enter a message" required />
+      <button type="submit">Add Message</button>
+    </form>
+    <h2>Stored Messages</h2>
+    <ul>
+      <li *ngFor="let msg of messages">{{ msg.message }}</li>
+    </ul>
+  </div>
+  
