@@ -1,0 +1,12 @@
+<div>
+    <h1>Message Board</h1>
+    <form (submit)="addMessage(); $event.preventDefault()">
+      <input type="text" [(ngModel)]="newMessage" placeholder="Enter a message" required />
+      <button type="submit">Add Message</button>
+    </form>
+    <h2>Stored Messages</h2>
+    <ul>
+      <li *ngFor="let message of messages">{{ message }}</li>
+    </ul>
+  </div>
+  
