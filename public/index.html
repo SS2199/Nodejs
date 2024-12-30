@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Node.js MongoDB App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    form {
+      margin-bottom: 20px;
+    }
+    input {
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      padding: 10px;
+      background: #f4f4f4;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Node.js MongoDB App</h1>
+  <form id="messageForm">
+    <input type="text" id="messageInput" placeholder="Enter a message" required />
+    <button type="submit">Add Message</button>
+  </form>
+  <h2>Stored Messages</h2>
+  <ul id="messagesList"></ul>
+
+  <script>
+    const form = document.getElementById('messageForm');
+    const input = document.getElementById('messageInput');
+    const messagesList = document.getElementById('messagesList');
+
+    // Fetch and display messages
+    async function fetchMessages() {
+      const res = await fetch('/messages');
+      const data = await res.json();
+      messagesList.innerHTML = '';
+      if (data.success) {
+        data.messages.forEach((msg) => {
+          const li = document.createElement('li');
+          li.textContent = msg.message;
+          messagesList.appendChild(li);
+        });
+      }
+    }
+
+    // Handle form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = input.value.trim();
+      if (!message) return;
+
+      const res = await fetch('/add-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        input.value = '';
+        fetchMessages();
+      } else {
+        alert('Error adding message');
+      }
+    });
+
+    // Initial fetch
+    fetchMessages();
+  </script>
+</body>
+</html>
