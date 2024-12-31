@@ -29,6 +29,7 @@ const DataSchema = new mongoose.Schema({
 
 const DataModel = mongoose.model('Data', DataSchema);
 
+
 // Routes
 // Serve the HTML UI
 app.get('/', (req, res) => {
